@@ -146,11 +146,10 @@ func (e *CanvasEngine) isCollP1() bool {
 }
 
 func (e *CanvasEngine) isCollP2() bool {
-	x := (e.BallX + e.Game.Ball.Height) >= e.P2X
-	y1 := e.P2Y <= e.BallY
-	y2 := (e.P2Y + e.Game.P2.Height) >= e.BallY
-	y := y1 && y2
-	return x && y
+	ballRightEdge := e.BallX + e.Game.Ball.Width
+	paddleLeftEdge := e.P2X
+	withinVerticalBounds := e.BallY >= e.P2Y && e.BallY <= e.P2Y+e.Game.P2.Height
+	return ballRightEdge >= paddleLeftEdge && withinVerticalBounds
 }
 
 func (e *CanvasEngine) isCollTop() bool {
@@ -227,10 +226,10 @@ func (e *CanvasEngine) resetBall() *CanvasEngine {
 
 func (e *CanvasEngine) resetPlayers() *CanvasEngine {
 	// P1
-	e.P1X = 0 + default_padding
+	e.P1X = 0 + e.Game.P1.Width + default_padding
 	e.P1Y = e.Game.Height/2 - e.Game.P1.Height/2
 	// P2
-	e.P2X = e.Game.Width - +e.Game.P1.Width - default_padding
+	e.P2X = e.Game.Width - e.Game.P2.Width - default_padding
 	e.P2Y = e.Game.Height/2 - e.Game.P2.Height/2
 	return e
 }
@@ -352,8 +351,8 @@ func (e *CanvasEngine) deOutOfBoundsBall() *CanvasEngine {
 		e.BallX = e.P1X + e.Game.P1.Width + magic_p
 	}
 	// P2
-	if e.BallX+e.Game.Ball.Width >= e.P2X {
-		e.BallX = e.P2X - magic_p
+	if e.isCollP2() {
+		e.BallX = e.P2X - e.Game.P2.Width - magic_p
 	}
 	return e
 }

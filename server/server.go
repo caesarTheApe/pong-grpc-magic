@@ -272,6 +272,8 @@ func (s *server) NotifyGameStarted(req *pong.GameStartedRequest, stream pong.Pon
 func (s *server) startGameWithPlayers(ctx context.Context, players []*Player) {
 	gameID := generateGameID()
 	newGameInstance := s.startNewGame(ctx)
+	players[0].PlayerNumber = 1
+	players[1].PlayerNumber = 2
 	newGameInstance.players = players
 	s.games[gameID] = newGameInstance
 
@@ -295,10 +297,10 @@ func generateGameID() string {
 func (s *server) startNewGame(ctx context.Context) *gameInstance {
 	// Initialize game engine
 	game := engine.NewGame(
-		80, 40,
-		engine.NewPlayer(1, 5),
-		engine.NewPlayer(1, 5),
-		engine.NewBall(3, 3),
+		800, 400,
+		engine.NewPlayer(5, 100),
+		engine.NewPlayer(5, 100),
+		engine.NewBall(10, 10),
 	)
 
 	canvasEngine := canvas.New(game)
