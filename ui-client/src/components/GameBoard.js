@@ -28,36 +28,41 @@ export default function GameBoard({ playerId }) {
   }
 
   // Calculate positions based on the board dimensions
-  const boardWidth = gameState.gameWidth*10; // Same as CSS
-  const boardHeight = gameState.gameHeight*10; // Same as CSS
-  const p1Height = gameState.p1Height; // Same as CSS
+  const boardWidth = gameState.gameWidth;
+  const boardHeight = gameState.gameHeight;
+  const p1Height = gameState.p1Height;
   const p2Height = gameState.p2Height;
 
   // Ball position
   const ballStyle = {
-    left: `${(gameState.ballX / 100) * boardWidth}px`,
-    top: `${(gameState.ballY / 100) * boardHeight}px`
+    left: `${gameState.ballX}px`,
+    top: `${gameState.ballY}px`,
+    width: `${gameState.ballWidth}px`,
+    height: `${gameState.ballHeight}px`
   };
 
   // Paddle positions
   const paddle1Style = {
     left: '5px', // 5px from the left edge
-    top: `${(gameState.p1Y / 100) * (boardHeight - p1Height)}px`
+    top: `${gameState.p1Y}px`,
+    width: `${gameState.p1Width}px`,
+    height: `${p1Height}px`
   };
-
   const paddle2Style = {
     right: '5px', // 5px from the right edge
-    top: `${(gameState.p2Y / 100) * (boardHeight - p2Height)}px`
+    top: `${gameState.p2Y}px`,
+    width: `${gameState.p2Width}px`,
+    height: `${p2Height}px`
   };
 
   return (
-    <div>
-      <div className="game-board" style={{ width: `${boardWidth}px`, height: `${boardHeight}px` }}>
-        <div className="paddle" style={paddle1Style}></div>
-        <div className="paddle" style={paddle2Style}></div>
-        <div className="ball" style={ballStyle}></div>
+    <div className="flex flex-col items-center justify-center my-8">
+      <div className="game-board relative mx-auto" style={{ width: `${boardWidth}px`, height: `${boardHeight}px`, backgroundColor: 'black' }}>
+        <div className="paddle bg-white" style={paddle1Style}></div>
+        <div className="paddle bg-white" style={paddle2Style}></div>
+        <div className="ball bg-red-500 rounded-full" style={ballStyle}></div>
       </div>
-      <div className="score">
+      <div className="score text-white text-xl mt-4">
         Player 1 Score: {gameState.p1Score} - Player 2 Score: {gameState.p2Score}
       </div>
     </div>

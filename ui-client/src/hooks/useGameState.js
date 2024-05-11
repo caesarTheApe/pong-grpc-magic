@@ -32,7 +32,11 @@ export const useGameState = (playerId) => {
           gameWidth: update.gameWidth,
           gameHeight: update.gameHeight,
           p1Height: update.p1Height,
-          p2Height: update.p2Height
+          p2Height: update.p2Height,
+          p1Width: update.p1Width,
+          p2Width: update.p2Width,
+          ballWidth: update.ballWidth,
+          ballHeight: update.ballHeight
         });
       } catch (err) {
         console.error('Failed to decode game update:', err);
@@ -86,8 +90,8 @@ export const useGameState = (playerId) => {
       console.log('Sending bet amount:', betAmount)
       console.log(transactionOptions)
       // await pongGame.lockOrJoinGame(betAmount, { from: accounts[0], value: betAmount });
-      const transaction = await pongGameContract.connect(signer).lockOrJoinGame(ethers.parseEther(betAmount), transactionOptions);
-      await transaction.wait();
+      // const transaction = await pongGameContract.connect(signer).lockOrJoinGame(ethers.parseEther(betAmount), transactionOptions);
+      // await transaction.wait();
   
       const req = new SignalReadyRequest();
       req.setClientId(playerId);
@@ -127,8 +131,7 @@ export const useGameState = (playerId) => {
     });
 
     notifyStream.on('end', () => {
-      console.log('Notify Stream ended by server');
-      setError('Game start notifications stream ended unexpectedly.');
+      setGameStarted(true);
     });
 
     return () => notifyStream.cancel();

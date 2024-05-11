@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }) => {
         setPlayerId(account);
 
         // Prepare and sign a message
-        const message = `Sign in on ${new Date().toISOString()}`;
-        const signature = await signer.signMessage(message);
-        console.log(`Signature: ${signature}`);
+        // const message = `Sign in on ${new Date().toISOString()}`;
+        // const signature = await signer.signMessage(message);
+        // console.log(`Signature: ${signature}`);
     } catch (error) {
         console.error("Error during login", error);
     }

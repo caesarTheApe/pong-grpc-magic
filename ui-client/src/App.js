@@ -6,7 +6,7 @@ import LoginComponent from './components/LoginComponent';
 function App() {
   return (
     <AuthProvider>
-      <div className="App">
+      <div className="App bg-gray-900 min-h-screen text-white">
         <AuthContent />
       </div>
     </AuthProvider>
@@ -20,7 +20,11 @@ const AuthContent = () => {
     return <LoginComponent />;
   }
 
-  return <GameBoard playerId={playerId} />;
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <GameBoard playerId={playerId} />
+    </div>
+  );
 };
 
 export default App;
