@@ -72,6 +72,11 @@ module.exports = {
       timeoutBlocks: 200,
       skipDryRun: true
     },
+    development: {
+      host: "127.0.0.1",
+      port: 8545,  // Match this to your Hardhat node's port if using Hardhat's local network
+      network_id: "*"  // Match any network id
+    }
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
     // You should run a client (like ganache, geth, or parity) in a separate terminal
