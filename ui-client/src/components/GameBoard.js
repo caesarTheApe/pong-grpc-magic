@@ -11,7 +11,7 @@ export default function GameBoard({ playerId }) {
       } else if (event.key === 'ArrowDown' || event.key === 's') {
         sendInput('ArrowDown');
       } else if (event.key === ' ') {  // Handle space bar
-        signalReady();
+        signalReady("0.01");
       }
     };
 

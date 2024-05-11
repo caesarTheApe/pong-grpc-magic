@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PongGameClient } from '../pongrpc/pong_grpc_web_pb';
 import { GameStreamRequest, PlayerInput, SignalReadyRequest, GameStartedRequest } from '../pongrpc/pong_pb';
+import { useAuth } from '../contexts/AuthContext';
+import { ethers } from 'ethers';
 
 export const useGameState = (playerId) => {
   const [gameState, setGameState] = useState(null);
@@ -8,18 +10,17 @@ export const useGameState = (playerId) => {
   const [error, setError] = useState('');
   const client = new PongGameClient('http://localhost:8085', null, null);
   const metadata = { 'client-id': playerId };
+  
+  const { pongGameContract, signer } = useAuth();
 
   useEffect(() => {
     const streamRequest = new GameStreamRequest();
-    // streamRequest.setPlayerId(playerId); // Ensure you're setting the player ID
     const stream = client.streamUpdates(streamRequest, metadata);
-    // const stream = client.streamUpdates(streamRequest, {});
     stream.on('data', (response) => {
       try {
-        // Assuming response.getData() gives you the binary data
-        const bytes = response.getData();  
+        const bytes = response.getData();
         const json = new TextDecoder('utf-8').decode(bytes);
-        const update = JSON.parse(json);  // Parse the JSON to get the GameUpdate object
+        const update = JSON.parse(json);
 
         setGameState({
           p1Score: update.p1Score,
@@ -44,17 +45,12 @@ export const useGameState = (playerId) => {
       setError('Failed to connect to game updates stream.');
     });
 
-    // Handle stream end or cancel
     stream.on('end', () => {
       console.log('Stream ended by server');
       setError('Game stream ended unexpectedly.');
     });
 
-    // Cleanup on unmount
-    return () => {
-      console.log('Cancelling game updates stream');
-      stream.cancel();
-    };
+    return () => stream.cancel();
   }, [gameStarted, playerId]);
 
   const sendInput = (input) => {
@@ -75,23 +71,43 @@ export const useGameState = (playerId) => {
     });
   };
 
-  const signalReady = () => {
-    const req = new SignalReadyRequest();
-    req.setClientId(playerId);
+  const signalReady = async (betAmount) => {
+    if (!pongGameContract) {
+      setError("Contract not loaded");
+      return;
+    }
   
-    // Creating a new promise to handle the async call
-    return new Promise((resolve, reject) => {
-      client.signalReady(req, null, (err, response) => {
-        if (err) {
-          console.error('Error signaling readiness:', err.message);
-          setError(err.message); // Update the state to reflect the error
-          reject(err.message);  // Reject the promise with the error message
-        } else {
-          console.log('Signal ready response received successfully:', response.toObject());
-          resolve();
-        }
+    const transactionOptions = {
+      from: signer.address,
+      value: ethers.parseEther(betAmount)  // Convert the bet amount to Wei
+    };
+  
+    try {
+      console.log('Sending bet amount:', betAmount)
+      console.log(transactionOptions)
+      // await pongGame.lockOrJoinGame(betAmount, { from: accounts[0], value: betAmount });
+      const transaction = await pongGameContract.connect(signer).lockOrJoinGame(ethers.parseEther(betAmount), transactionOptions);
+      await transaction.wait();
+  
+      const req = new SignalReadyRequest();
+      req.setClientId(playerId);
+      return new Promise((resolve, reject) => {
+        client.signalReady(req, null, (err, response) => {
+          if (err) {
+            console.error('Error signaling readiness:', err.message);
+            setError(err.message); // Update the state to reflect the error
+            reject(err.message);  // Reject the promise with the error message
+          } else {
+            console.log('Signal ready response received successfully:', response.toObject());
+            resolve();
+          }
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error signaling readiness or locking in game bet:', error);
+      setError(error.message);
+      throw error;
+    }
   };
 
   useEffect(() => {
@@ -101,17 +117,18 @@ export const useGameState = (playerId) => {
 
     notifyStream.on('data', (response) => {
       console.log(response.toObject())
-      setGameStarted(true)
-      setError(null)
-      // Handle game start notifications
+      setGameStarted(true);
+      setError(null);
     });
 
     notifyStream.on('error', (err) => {
-      // Handle errors
+      console.error('Notify Stream Error:', err);
+      setError('Failed to connect to game start notifications.');
     });
 
     notifyStream.on('end', () => {
-      // Handle stream end
+      console.log('Notify Stream ended by server');
+      setError('Game start notifications stream ended unexpectedly.');
     });
 
     return () => notifyStream.cancel();
